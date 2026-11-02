@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: reviews-pptx-first-half
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  1〜60枚目だけを対象に評価する。56分・60枚（約56秒/枚）のタイマーの問題、文字の多さ、発表者ノートとの関係などを、重要度ごとにまとめて報告する。pptx なので編集はせず修正提案のみ。

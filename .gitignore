@@ -1,0 +1,8 @@
+# テストの作業結果（入力スライドのコピーや評価結果を含む）
+*-workspace/
+plugins/*/skills/*/evals/results/
+
+# テストの入力スライド。公開しない
+plugins/*/skills/*/evals/*/files/
+
+__pycache__/

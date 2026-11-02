@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: reviews-good-lt-pdf
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  ぺんたのスタイル定義に沿った評価。NG はほぼなく、良い点（タイマーの考え方、最後のメッセージなど）を挙げたうえで、スライドごとに具体的な改善提案を示す。

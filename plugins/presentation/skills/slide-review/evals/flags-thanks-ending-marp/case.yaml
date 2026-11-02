@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: flags-thanks-ending-marp
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  最後の「ありがとうございました」スライドを NG として指摘し、修正案を示す。git 管理されていないので、元ファイルは変えずに iotlt11.revised.md として修正版を出力する。

@@ -1,0 +1,14 @@
+{
+  "name": "plageoj",
+  "description": "plageoj が作った Claude Code のプラグインと skill",
+  "owner": {
+    "name": "plageoj"
+  },
+  "plugins": [
+    {
+      "name": "presentation",
+      "source": "./plugins/presentation",
+      "description": "ぺんた（@plageoj）のプレゼンテーションスタイルでスライドを評価・改善する"
+    }
+  ]
+}
