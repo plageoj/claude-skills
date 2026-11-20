@@ -9,6 +9,11 @@
       "name": "presentation",
       "source": "./plugins/presentation",
       "description": "ぺんた（@plageoj）のプレゼンテーションスタイルでスライドを評価・改善する"
+    },
+    {
+      "name": "video",
+      "source": "./plugins/video",
+      "description": "アプリのデモやスライドから、ナレーションと字幕付きの紹介動画を作る"
     }
   ]
 }
