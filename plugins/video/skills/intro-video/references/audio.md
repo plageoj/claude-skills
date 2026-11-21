@@ -9,10 +9,11 @@ VO は、動画の 0:00 から台本の時刻どおりに並んだ 1 本のフ�
 ```bash
 git clone https://github.com/plageoj/srt-dubbing.git
 cd srt-dubbing
-uv run viet_dubbing.py --srt <作業ディレクトリ>/scripts.en.srt --voice en-US-AndrewNeural --audio-only
+uv run viet_dubbing.py --srt <作業ディレクトリ>/scripts.vo.srt --voice en-US-AndrewNeural --audio-only
 ```
 
-- 渡すのは音声側の SRT（VO の原稿）。視聴者向けの字幕の SRT ではない。
+- 渡すのは読み上げ用の SRT（`scripts.vo.srt`）。視聴者向けの字幕の SRT ではない。
+- 読み違いは合成した音声を聞かないと分からない。英字・略語・人名・数字を含むキューを先に数個合成して聞き、読みを直してから全体を合成する。
 - `--voice` には edge-tts の音声 ID を渡す。一覧は `uv run edge-tts --list-voices`。`female` / `male` はベトナム語の音声の別名なので使わない。候補を 2〜3 個合成して、ユーザーに選んでもらうとよい。
 - `--audio-only` では `--out` が効かず、SRT 名と時刻から付いた名前の MP3 ができる。それを `public/vo.mp3` にコピーする。
 - 合成した音声はキューごとにキャッシュ（`tts_<SRT 名>/cue_<4 桁の番号>.mp3`）に残り、中断しても続きから作り直せる。

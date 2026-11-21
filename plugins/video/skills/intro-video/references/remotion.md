@@ -13,7 +13,8 @@ video/
 ├── package.json        scripts: assets, studio, render, render:clean
 ├── prepare.mjs         素材の前処理（下記）
 ├── scripts.md          台本
-├── scripts.*.srt       字幕
+├── scripts.vo.srt      読み上げ用の原稿
+├── scripts.<言語>.srt  字幕
 ├── record-demo.mjs     収録スクリプト（アプリの場合）
 ├── public/             素材。staticFile() で参照する
 │   ├── demo.mp4        収録したテイク
@@ -47,9 +48,9 @@ video/
 
 レンダリングの前に毎回走らせ、Remotion が読む JSON を作る。
 
-- 二つの SRT を読み、キューごとに `{ index, start, end, ja, en }` のような形で `src/generated/subtitles.json` に書く。SRT の行末（CRLF）や末尾の空行など、ユーザーがエディタで直したときに混ざるゆれを吸収する。
+- 字幕用の SRT（CC 用にもう一つあればそれも）を読み、キューごとに `{ index, start, end, ja, en }` のような形で `src/generated/subtitles.json` に書く。SRT の行末（CRLF）や末尾の空行など、ユーザーがエディタで直したときに混ざるゆれを吸収する。
 - 書き出しのたびに SRT を読み直すので、ユーザーが SRT を直したら `npm run render` だけで字幕が変わる。字幕の文言をシーンのコードに書き写さない。
-- 二つの SRT のキュー数や時刻が食い違っていたら、警告を出して止める。気づかないまま書き出すと、字幕と VO がずれた動画ができる。
+- 字幕用と読み上げ用の SRT のキュー数や時刻が食い違っていたら、警告を出して止める。気づかないまま書き出すと、字幕と VO がずれた動画ができる。
 - 書き出しに使った SRT を `out/` に控えておく。次に直されたとき、どのキューが変わったかを比べるため。
 - 収録のテイク（`out/demo.mp4`）が新しければ `public/` にコピーする。
 - `public/` にある素材を見て、あるものだけを `src/generated/assets.json` に書く。ない素材はシーン側でプレースホルダー（点線の枠に「ここに◯◯」）を出す。素材がそろう前から通しで見られるようにするため。
