@@ -1,6 +1,6 @@
 ---
 name: slide-review
-description: ぺんた（@plageoj）のプレゼンテーションスタイルに照らして、完成したスライドを評価し、修正提案と自動修正を行う。PDF・Marp（Markdown）・Google Slides・pptx に対応。「スライドを見て」「LT 資料をレビューして」「発表資料にフィードバックを」「このスライドどう？」「時間内に収まる？」「字が小さくない？」など、発表スライドの良し悪しや改善点を尋ねられたときは、明示的に「評価」と言われなくても必ずこの skill を使う。docswell・Speaker Deck の PDF、`marp: true` を含む Markdown、docs.google.com/presentation の URL が渡されたときも対象。スライドをゼロから作る依頼には使わない。
+description: "ぺんた（@plageoj）のプレゼンテーションスタイルに照らして、完成したスライドを評価し、修正提案と自動修正を行う。PDF・Marp（Markdown）・Google Slides・pptx に対応。「スライドを見て」「LT 資料をレビューして」「発表資料にフィードバックを」「このスライドどう？」「時間内に収まる？」「字が小さくない？」など、発表スライドの良し悪しや改善点を尋ねられたときは、明示的に「評価」と言われなくても必ずこの skill を使う。docswell・Speaker Deck の PDF、`marp: true` を含む Markdown、docs.google.com/presentation の URL が渡されたときも対象。資料からスライドを作る依頼や、既存のスライドをこのスタイルに作り直す依頼（slide-create）には使わない。"
 ---
 
 # スライド評価
