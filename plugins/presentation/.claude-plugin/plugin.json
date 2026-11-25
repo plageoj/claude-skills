@@ -1,10 +1,13 @@
 {
   "name": "presentation",
-  "description": "ぺんた（@plageoj）のプレゼンテーションスタイルでスライドを評価・改善する",
+  "description": "ぺんた（@plageoj）のプレゼンテーションスタイルで、資料からスライドを作り、完成したスライドを評価する",
   "version": "0.1.0",
   "author": {
     "name": "plageoj"
   },
   "license": "MIT",
-  "repository": "https://github.com/plageoj/claude-skills"
+  "repository": "https://github.com/plageoj/claude-skills",
+  "dependencies": [
+    "yomiyasu@yomiyasu"
+  ]
 }
