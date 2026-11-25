@@ -48,6 +48,14 @@ ln -s "$PWD/claude-skills/plugins/video/skills/intro-video" ~/.claude/skills/int
 - スライドを使う場合: PDF を画像にするツール（pdftoppm か pymupdf）。Marp なら Chrome、pptx なら LibreOffice
 - VO を合成する場合: Python 3.10 以上と uv（[srt-dubbing](https://github.com/plageoj/srt-dubbing)）
 
+Windows、macOS、Linux で動きます。srt-dubbing の README は Windows での入れ方だけを書いていますが、Edge TTS はネット越しの API なので、OS を問わず同じコマンドで合成できます。ffmpeg と uv は次のように入れます。
+
+| OS | ffmpeg | uv |
+|---|---|---|
+| Windows | `winget install Gyan.FFmpeg` | `winget install astral-sh.uv` |
+| macOS | `brew install ffmpeg` | `brew install uv` |
+| Linux | `sudo apt install ffmpeg`（Debian / Ubuntu） | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+
 Remotion は個人と従業員 3 人以下の会社は無料で、それ以外は有料のライセンスが要ります。
 
 ## 使い方

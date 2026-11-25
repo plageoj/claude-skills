@@ -77,7 +77,11 @@ video/
 - `subtitles.json` から現在の時刻のキューを探し、画面下に出す。
 - 白い文字に黒い縁取り（`WebkitTextStroke` と `paintOrder: "stroke fill"`）と薄い影。1920×1080 なら 56〜64px、下の余白 64px 程度。
 - 字幕と、Remotion で描く文字（締めのカードなど）の書体は、素材の書体にそろえる。スライドなら PDF の埋め込みフォントを見る（pymupdf の `page.get_fonts()`。`ABCDEF+NotoSansJP-Regular` のような名前の `+` の後ろ）。
-- フォントはこの PC にインストールされたものを優先する。`prepare.mjs` でフォントファイルの有無を調べ（Windows はユーザーごとの `%LOCALAPPDATA%\Microsoft\Windows\Fonts` と `%WINDIR%\Fonts`）、結果を `src/generated/font.json` に書く。あれば `fontFamily: '"<フォント名>", sans-serif'` と名前で指定するだけで、ヘッドレス Chrome がシステムから読む。可変フォント（`<名前>[wght].ttf`）なら、1 ファイルで太さを変えられる。
+- フォントはこの PC にインストールされたものを優先する。`prepare.mjs` でフォントファイルの有無を調べ、結果を `src/generated/font.json` に書く。調べる場所は `process.platform` で分ける。
+  - Windows（`win32`）: ユーザーごとの `%LOCALAPPDATA%\Microsoft\Windows\Fonts` と `%WINDIR%\Fonts`
+  - macOS（`darwin`）: `~/Library/Fonts`、`/Library/Fonts`、`/System/Library/Fonts`
+  - Linux: `fc-list : family file` があればそれで探す。なければ `~/.local/share/fonts`、`~/.fonts`、`/usr/share/fonts`、`/usr/local/share/fonts` をサブフォルダまで探す（`/usr/share/fonts/opentype/noto/` のように深い所に入る）
+  - あれば `fontFamily: '"<フォント名>", sans-serif'` と名前で指定するだけで、ヘッドレス Chrome がシステムから読む。可変フォント（`<名前>[wght].ttf`）なら、1 ファイルで太さを変えられる。
   - 理由: `@remotion/google-fonts` は日本語を文字の範囲ごとの細かいファイルで配信していて、Noto Sans JP の 2 ウェイトで 248 回の取得になった。回線が遅いと、描画前の待ち（30 秒）を超えて書き出しが止まる。
   - インストールされていなければ、`@remotion/google-fonts/<フォント>` の `loadFont` に `subsets: ["japanese", "latin"]` を付けて読む。それでも止まるなら `--timeout=180000`。
 - 字幕なし版（CC を別に出す用）の Composition も作る。props で字幕の有無を切り替える。
