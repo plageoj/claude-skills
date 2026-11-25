@@ -7,17 +7,23 @@ skill は手順書で、コードは同梱していません。収録スクリ�
 ## 工程
 
 1. 入力をそろえる（提出先の規定、言語、視聴者、VO の作り方、触れてはいけないもの）
-2. 台本を書く。画面の操作や機能は実装と照らし合わせる。ユーザーがスライドにない話を足すなどして直し、確定させる
+2. 台本を書き、yomiyasu で推敲する。画面の操作や機能は実装と照らし合わせる。ユーザーがスライドにない話を足すなどして直し、確定させる
 3. 確定した台本から SRT 字幕を作る。キューの時刻は、合成した音声の長さから決める
-4. 映像素材を作る。アプリは Playwright で台本の時刻どおりに操作して収録し、スライドはページ画像にする
+4. 映像素材を作る。アプリは Playwright で台本の時刻どおりに操作して収録し、スライドはページ画像にする（ぺんたのスタイルに作り直すなら、presentation プラグインの slide-create で作り直してから）
 5. ナレーションを用意する。[srt-dubbing](https://github.com/plageoj/srt-dubbing)（Edge TTS）で合成するか、録音ファイルを渡す
 6. Remotion で編集し、字幕を焼き込み、VO と BGM の音量をそろえて書き出す
 7. 公開前に、透かし・個人情報の映り込み・権利・ライセンスを確かめて報告する
-8. ユーザーが台本や SRT を直したら、変わったところだけを作り直して書き出し直す（焼き込む字幕の文言なら書き出し直すだけ、ナレーションの文言なら変わったキューの VO を合成し直す）
+8. ユーザーが台本や SRT を直したら、変わったところだけを作り直して書き出し直す（ナレーションの文言なら変わったキューの VO を合成し直す。音声と字幕が同じ言語なら、字幕の直しも読み上げに写す）
 
 音声と字幕の言語は毎回訊かれます（例: 英語音声＋日本語字幕の吹き替え映画風）。
 
 ## インストール
+
+台本と作り直したスライドの推敲に、[yomiyasu](https://github.com/nanaism/yomiyasu) プラグインを使います。video プラグインの依存として自動で入りますが、先に yomiyasu のマーケットプレイスを登録しておく必要があります。
+
+```
+/plugin marketplace add nanaism/yomiyasu
+```
 
 ### プラグインとして入れる
 
@@ -31,6 +37,8 @@ skill は手順書で、コードは同梱していません。収録スクリ�
 git clone https://github.com/plageoj/claude-skills.git
 ln -s "$PWD/claude-skills/plugins/video/skills/intro-video" ~/.claude/skills/intro-video
 ```
+
+この場合、yomiyasu は自動で入らないので、[yomiyasu の README](https://github.com/nanaism/yomiyasu) に従って別に入れてください。
 
 ## 必要なもの
 
@@ -52,6 +60,10 @@ Remotion は個人と従業員 3 人以下の会社は無料で、それ以外�
 このスライド（slides/talk.pdf）を、ナレーション付きの 2 分の動画にして。
 ```
 
+```
+このスライド（lecture.pdf）をぺんたスタイルで作り直して、10 分の動画にして。日本語音声＋日本語字幕で、台本の確認は挟まず最後まで。
+```
+
 ## 構成
 
 ```
@@ -59,7 +71,7 @@ skills/intro-video/
 ├── SKILL.md                     工程全体と、入力・台本・公開前の確認
 └── references/
     ├── source-app.md            Playwright での収録
-    ├── source-slides.md         スライドの画像化と並べ方
+    ├── source-slides.md         スライドの画像化、並べ方と強調
     ├── audio.md                 VO（srt-dubbing / 録音）と音量
     └── remotion.md              Remotion での編集と書き出し
 ```

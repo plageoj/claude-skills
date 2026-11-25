@@ -4,11 +4,14 @@
   "owner": {
     "name": "plageoj"
   },
+  "allowCrossMarketplaceDependenciesOn": [
+    "yomiyasu"
+  ],
   "plugins": [
     {
       "name": "presentation",
       "source": "./plugins/presentation",
-      "description": "ぺんた（@plageoj）のプレゼンテーションスタイルでスライドを評価・改善する"
+      "description": "ぺんた（@plageoj）のプレゼンテーションスタイルで、資料からスライドを作り、完成したスライドを評価する"
     },
     {
       "name": "video",

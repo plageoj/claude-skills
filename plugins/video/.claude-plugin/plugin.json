@@ -6,5 +6,8 @@
     "name": "plageoj"
   },
   "license": "MIT",
-  "repository": "https://github.com/plageoj/claude-skills"
+  "repository": "https://github.com/plageoj/claude-skills",
+  "dependencies": [
+    "yomiyasu@yomiyasu"
+  ]
 }
