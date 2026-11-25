@@ -60,6 +60,7 @@ video/
 
 - `sec(s)`: 秒をフレーム数にする。シーンの時刻はすべて秒で書き、`sec()` で変換する。
 - `useFade(from, to, inDur, outDur)`: 区間の頭でフェードイン、尻でフェードアウトする不透明度。`interpolate` の入力は厳密に増加していないとエラーになるので、フェードの長さが区間より長くても点が逆転しないよう、中間の 2 点を `max(a+1, …)` と `min(d-1, …)` で挟む。
+- **`Sequence` の中の `useCurrentFrame()` は、その区間の頭から数えたフレームを返す**。動画全体の秒数（キューの時刻など）で演出を書くなら、`Sequence` で包まずに、`useCurrentFrame()` の値で表示する区間かどうかを判定してから描く。包んだうえで全体の秒数と比べると、演出が区間の開始時刻ぶん遅れる。
 - `Footage({ file, from, cropTop })`: `OffthreadVideo` で素材を映す。`from` で素材の頭を飛ばし（`startFrom={sec(from)}`）、`cropTop` でウィンドウのタイトルバーなどを上から切る（絶対配置で上にずらし、幅を 100% にする）。素材は必ず `muted` にし、音は `Audio` で別に鳴らす。
 
 ## 素材を切り出す
@@ -75,7 +76,10 @@ video/
 
 - `subtitles.json` から現在の時刻のキューを探し、画面下に出す。
 - 白い文字に黒い縁取り（`WebkitTextStroke` と `paintOrder: "stroke fill"`）と薄い影。1920×1080 なら 56〜64px、下の余白 64px 程度。
-- ローカルのフォントは `public/fonts/` に置き、`@remotion/fonts` の `loadFont({ family, url: staticFile("fonts/…") })` で読む。Google Fonts は `@remotion/google-fonts` で読む。指定したフォントが読めないときに備えて、Noto Sans JP などを後ろに並べる。
+- 字幕と、Remotion で描く文字（締めのカードなど）の書体は、素材の書体にそろえる。スライドなら PDF の埋め込みフォントを見る（pymupdf の `page.get_fonts()`。`ABCDEF+MPLUS2-Regular` のような名前の `+` の後ろ）。ぺんたのスライドは M PLUS 2 が多い。
+- フォントはこの PC にインストールされたものを優先する。`prepare.mjs` でフォントファイルの有無を調べ（Windows はユーザーごとの `%LOCALAPPDATA%\Microsoft\Windows\Fonts` と `%WINDIR%\Fonts`）、結果を `src/generated/font.json` に書く。あれば `fontFamily: '"M PLUS 2", sans-serif'` と名前で指定するだけで、ヘッドレス Chrome がシステムから読む。M PLUS は可変フォント（`MPLUS2[wght].ttf`）で、400 も 700 もこの一つで出る。
+  - 理由: `@remotion/google-fonts` は日本語を文字の範囲ごとの細かいファイルで配信していて、Noto Sans JP の 2 ウェイトで 248 回の取得になった。回線が遅いと、描画前の待ち（30 秒）を超えて書き出しが止まる。
+  - インストールされていなければ、`@remotion/google-fonts/MPLUS2` の `loadFont` に `subsets: ["japanese", "latin"]` を付けて読む。それでも止まるなら `--timeout=180000`。
 - 字幕なし版（CC を別に出す用）の Composition も作る。props で字幕の有無を切り替える。
 
 ## 音声
@@ -86,6 +90,12 @@ video/
 ## 書き出し
 
 - 1920×1080、30 fps を基本にする。収録素材は 60 fps でもよい（`OffthreadVideo` が間引く）。
-- `npm run render` で書き出す。2 分の動画で 5〜10 分かかるので、バックグラウンドで実行して終わりを待つ。
+- `npm run render` で書き出す。バックグラウンドで実行して終わりを待つ。
+- 速さを決めるのは、並列数より描画前の待ちだった。スライドの動画（4 分 24 秒、7,932 フレーム、Core Ultra 5 125H）の実測:
+  - Google Fonts で Noto Sans JP を読んでいたときは約 10 分。各タブがフォントを取りに行くため。
+  - インストール済みの M PLUS 2 に替えたら約 3 分 20 秒（約 40 fps）。
+  - 900 フレームで `--concurrency` を 6 / 9 / 13 / 18 と変えても、22〜24 秒で差がなかった。既定のままでよい。
+  - `--gl=angle`（GPU で描画）にも差はなかった。同梱の ffmpeg は NVENC しか持たず、Intel Arc ではエンコードを GPU に任せられない。
+- 遅いと感じたら、まず外から取ってくるもの（Web フォント、URL の画像）を手元に置き換える。
 - TSX を書くときは、シェルのヒアドキュメントではなくファイル書き込みのツールを使う。テンプレートリテラルや `$` がシェルに解釈されて壊れるため。
 - ユーザーが台本を直したと言ったら、どのファイルが変わったか（更新日時）を確かめてから書き出し直し、変わったファイルを報告する。
