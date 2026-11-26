@@ -45,7 +45,7 @@ section.title h1 { font-size: 72px; margin: 0 0 12px; }
 section.title .sub { font-size: 44px; color: #000; }
 section.chapter h1 { font-size: 64px; margin: 0; }
 section.chapter .num { font-size: 40px; color: #0b449e; }
-section.big p { font-size: 76px; color: #000; line-height: 1.4; }
+section.big p:not(.note) { font-size: 76px; color: #000; line-height: 1.4; }
 
 /* Grey box for the takeaway of a slide */
 .box {
@@ -66,7 +66,7 @@ section.big p { font-size: 76px; color: #000; line-height: 1.4; }
 
 /* Two panels to compare */
 .two { display: flex; gap: 48px; align-items: stretch; margin-top: 12px; }
-.two > div { flex: 1; background: #fff; border-radius: 12px; padding: 24px 32px; }
+.two > div { flex: 1; background: #fff; border-radius: 12px; padding: 24px 32px; font-size: 36px; }
 .two .label { font-size: 34px; color: #6b7b88; }
 
 /* Step-by-step reveal: keep the layout, hide what comes on the next page */

@@ -18,7 +18,9 @@ pptx の場合は LibreOffice（soffice）。python-pptx があれば発表者�
 import argparse
 import collections
 import json
+import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -131,16 +133,41 @@ def marp_declared_fonts(md_text):
     return fonts
 
 
+def font_file_stems():
+    """fontconfig のない環境で、フォントのフォルダにあるファイル名（小文字、空白・記号なし）を返す。"""
+    home = Path.home()
+    if sys.platform == "win32":
+        dirs = [Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts",
+                Path(os.environ.get("LOCALAPPDATA", home)) / "Microsoft" / "Windows" / "Fonts"]
+    elif sys.platform == "darwin":
+        dirs = [home / "Library" / "Fonts", Path("/Library/Fonts"), Path("/System/Library/Fonts")]
+    else:
+        dirs = [home / ".local" / "share" / "fonts", home / ".fonts", Path("/usr/share/fonts")]
+    stems = []
+    for d in dirs:
+        if d.is_dir():
+            stems += [re.sub(r"[^a-z0-9]", "", f.stem.lower()) for f in d.rglob("*")
+                      if f.suffix.lower() in (".ttf", ".otf", ".ttc")]
+    return stems
+
+
 def check_installed(fonts):
-    """指定フォントがこの環境で解決されるかを調べる。"""
+    """指定フォントがこの環境で解決されるかを調べる。installed は True / False / None（確かめられない）。"""
     result = []
+    stems = None
     for name in fonts:
         try:
             matched = subprocess.run(["fc-match", "-f", "%{family}", name],
                                      capture_output=True, text=True).stdout
+            installed = name.lower() in matched.lower()
         except FileNotFoundError:
+            # fontconfig がない（Windows など）。ファイル名で見つかれば入っているとし、
+            # 見つからなくてもファイル名が違うだけかもしれないので「確かめられない」にする
+            if stems is None:
+                stems = font_file_stems()
+            key = re.sub(r"[^a-z0-9]", "", name.lower())
             matched = None
-        installed = None if matched is None else name.lower() in matched.lower()
+            installed = True if key and any(key in s for s in stems) else None
         result.append({"font": name, "installed": installed, "fallback": matched})
     return result
 
@@ -185,7 +212,11 @@ def pptx_info(pptx_path):
 
 def marp_to_pdf(md_path, out_dir):
     pdf_path = out_dir / (md_path.stem + ".pdf")
-    cmd = ["npx", "-y", MARP_CLI, "--pdf", "--allow-local-files", str(md_path), "-o", str(pdf_path)]
+    # Windows の npx は npx.cmd なので、名前で探して呼ぶ
+    npx = shutil.which("npx")
+    if not npx:
+        sys.exit("Marp の変換には npx（Node.js）が必要です。Marp で書き出した PDF を指定してください。")
+    cmd = [npx, "-y", MARP_CLI, "--pdf", "--allow-local-files", str(md_path), "-o", str(pdf_path)]
     # marp-cli は標準入力が開いていると入力を待ち続けるため、明示的に閉じる
     subprocess.run(cmd, check=True, cwd=md_path.parent, capture_output=True,
                    stdin=subprocess.DEVNULL, timeout=300)
@@ -375,7 +406,10 @@ def write_summary(result, out_dir):
     if result.get("declared_fonts"):
         decl = []
         for f in result["declared_fonts"]:
-            mark = "" if f["installed"] else "（この環境に未インストール。代替フォントで描画）"
+            if f["installed"] is None:
+                mark = "（この環境に入っているか確かめられない。描画を目視で確認すること）"
+            else:
+                mark = "" if f["installed"] else "（この環境に未インストール。代替フォントで描画）"
             decl.append(f["font"] + mark)
         lines.append(f"- ソースで指定されたフォント: {', '.join(decl)}")
     if result["repeated_small_text"]:
