@@ -2,7 +2,7 @@
 
 [Remotion](https://www.remotion.dev/) は React で動画を組むツール。シーンをコードで描けるので、台本の時刻をそのまま数値で書け、字幕や素材を差し替えて何度でも書き出し直せる。
 
-Remotion は個人と従業員 3 人以下の会社は無料、それ以外は有料のライセンスが要る。最初にユーザーに伝える。
+Remotion は個人と小さな会社（3 人まで）は無料で、それ以外は有料のライセンスが要る。人数には、パートタイムや業務委託の人、同じ Remotion のコードを使う取引先の人も数える場合があるので、[規約](https://www.remotion.dev/docs/terms)で確かめてもらう。最初にユーザーに伝える。
 
 ## プロジェクトの構成
 
@@ -51,15 +51,21 @@ video/
 - 字幕用の SRT（CC 用にもう一つあればそれも）を読み、キューごとに `{ index, start, end, ja, en }` のような形で `src/generated/subtitles.json` に書く。SRT の行末（CRLF）や末尾の空行など、ユーザーがエディタで直したときに混ざるゆれを吸収する。
 - 書き出しのたびに SRT を読み直すので、ユーザーが SRT を直したら `npm run render` だけで字幕が変わる。字幕の文言をシーンのコードに書き写さない。
 - 字幕用と読み上げ用の SRT のキュー数や時刻が食い違っていたら、警告を出して止める。気づかないまま書き出すと、字幕と VO がずれた動画ができる。
-- 書き出しに使った SRT を `out/` に控えておく。次に直されたとき、どのキューが変わったかを比べるため。
+- 書き出しに使った SRT を `out/` に控えておく。次に直されたとき、どのキューが変わったかを中身で比べるため。控えるのは書き出しが成功したあとにする（`render` のスクリプトで `remotion render` の後ろに置き、`studio` では控えない）。Studio を開いただけや、失敗した書き出しで控えを上書きすると、前回との違いが分からなくなる。
 - 収録のテイク（`out/demo.mp4`）が新しければ `public/` にコピーする。
 - `public/` にある素材を見て、あるものだけを `src/generated/assets.json` に書く。ない素材はシーン側でプレースホルダー（点線の枠に「ここに◯◯」）を出す。素材がそろう前から通しで見られるようにするため。
-- VO と BGM を `loudnorm` で -16 LUFS にそろえ、`public/norm/` に WAV で書く（`references/audio.md`）。元ファイルより新しければ作り直さない。
+- VO と BGM を `loudnorm` で -16 LUFS にそろえ、`public/norm/` に WAV で書く（`references/audio.md`）。作り直すかは元ファイルの中身で決める（ハッシュを `public/norm/` に控えて比べる）。更新日時で決めると、古い日時のまま差し替えた VO を見落とす。
 
 ## 共通部品
 
 - `sec(s)`: 秒をフレーム数にする。シーンの時刻はすべて秒で書き、`sec()` で変換する。
-- `useFade(from, to, inDur, outDur)`: 区間の頭でフェードイン、尻でフェードアウトする不透明度。`interpolate` の入力は厳密に増加していないとエラーになるので、フェードの長さが区間より長くても点が逆転しないよう、中間の 2 点を `max(a+1, …)` と `min(d-1, …)` で挟む。
+- `useFade(from, to, inDur, outDur)`: 区間の頭でフェードイン、尻でフェードアウトする不透明度。`interpolate` の入力は厳密に増加していないとエラーになるので、フェードの長さが区間より長くても点が逆転しないよう、中間の 2 点を次のように取る。
+
+  ```ts
+  const b = Math.max(from + 1, Math.min(from + inDur, to - 2));
+  const c = Math.min(to - 1, Math.max(to - outDur, b + 1));
+  // interpolate(frame, [from, b, c, to], [0, 1, 1, 0])
+  ```
 - **`Sequence` の中の `useCurrentFrame()` は、その区間の頭から数えたフレームを返す**。動画全体の秒数（キューの時刻など）で演出を書くなら、`Sequence` で包まずに、`useCurrentFrame()` の値で表示する区間かどうかを判定してから描く。包んだうえで全体の秒数と比べると、演出が区間の開始時刻ぶん遅れる。
 - `Footage({ file, from, cropTop })`: `OffthreadVideo` で素材を映す。`from` で素材の頭を飛ばし（`startFrom={sec(from)}`）、`cropTop` でウィンドウのタイトルバーなどを上から切る（絶対配置で上にずらし、幅を 100% にする）。素材は必ず `muted` にし、音は `Audio` で別に鳴らす。
 
@@ -83,7 +89,7 @@ video/
   - Linux: `fc-list : family file` があればそれで探す。なければ `~/.local/share/fonts`、`~/.fonts`、`/usr/share/fonts`、`/usr/local/share/fonts` をサブフォルダまで探す（`/usr/share/fonts/opentype/noto/` のように深い所に入る）
   - あれば `fontFamily: '"<フォント名>", sans-serif'` と名前で指定するだけで、ヘッドレス Chrome がシステムから読む。可変フォント（`<名前>[wght].ttf`）なら、1 ファイルで太さを変えられる。
   - 理由: `@remotion/google-fonts` は日本語を文字の範囲ごとの細かいファイルで配信していて、Noto Sans JP の 2 ウェイトで 248 回の取得になった。回線が遅いと、描画前の待ち（30 秒）を超えて書き出しが止まる。
-  - インストールされていなければ、`@remotion/google-fonts/<フォント>` の `loadFont` に `subsets: ["japanese", "latin"]` を付けて読む。それでも止まるなら `--timeout=180000`。
+  - インストールされていなければ、`@remotion/google-fonts/<フォント>` の `loadFont` に、そのフォントが持っている subset を付けて読む（日本語のフォントなら `["japanese", "latin"]`。持っていない subset を指定するとエラーになる）。それでも止まるなら `--timeout=180000`。
 - 字幕なし版（CC を別に出す用）の Composition も作る。props で字幕の有無を切り替える。
 
 ## 音声

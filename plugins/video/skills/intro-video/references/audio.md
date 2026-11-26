@@ -4,7 +4,7 @@ VO は、動画の 0:00 から台本の時刻どおりに並んだ 1 本のフ�
 
 ## srt-dubbing で合成する
 
-[plageoj/srt-dubbing](https://github.com/plageoj/srt-dubbing) は、SRT の各キューを Microsoft Edge TTS で読み上げ、キューの開始時刻に並べた音声を作る。API キーは要らない。必要なのは Python 3.10 以上、ffmpeg、uv（なければ `pip install .`）。
+[plageoj/srt-dubbing](https://github.com/plageoj/srt-dubbing) は、SRT の各キューを Microsoft Edge TTS で読み上げ、キューの開始時刻に並べた音声を作る。API キーは要らない。必要なのは Python 3.10 以上、ffmpeg、uv。uv がなければ `pip install .` で入れ、以下の `uv run viet_dubbing.py` は `python viet_dubbing.py`、`uv run edge-tts` は `edge-tts` に読み替える。
 
 ```bash
 git clone https://github.com/plageoj/srt-dubbing.git
@@ -17,7 +17,8 @@ uv run viet_dubbing.py --srt <作業ディレクトリ>/scripts.vo.srt --voice e
 - `--voice` には edge-tts の音声 ID を渡す。一覧は `uv run edge-tts --list-voices`。`female` / `male` はベトナム語の音声の別名なので使わない。候補を 2〜3 個合成して、ユーザーに選んでもらうとよい。
 - 話す速さは `--rate +15%` のように渡す（遅くするなら `--rate=-10%`）。ja-JP-KeitaNeural は既定の速さだと遅く聞こえ、`+15%` でちょうどよいと言われた。速さを変えると音声の長さが変わるので、時刻を組み直す（下記）。
 - `--audio-only` では `--out` が効かず、SRT 名と時刻から付いた名前の MP3 ができる。それを `public/vo.mp3` にコピーする。
-- 合成した音声はキューごとにキャッシュのフォルダ（`tts_<SRT 名>/`、`--rate` を付けると `tts_<SRT 名>_rate+15/` のように速さごとに別）に `cue_<4 桁の番号>.mp3` として残り、中断しても続きから作り直せる。
+- 合成に失敗したキューがあっても MP3 は出る（そのキューは無音になる）。終わりに出る表の `Failed` が 0 かを確かめ、0 でなければ `retry_failed_tts.py --srt <同じ SRT> --voice <同じ声> --rate <同じ速さ>` で作り直し、もう一度合成してから使う。
+- 合成した音声はキューごとにキャッシュのフォルダ（`tts_<SRT 名>/`、`--rate` を付けると `tts_<SRT 名>_rate+15/` のように速さごとに別）に `cue_<4 桁の番号>.mp3` として残り、中断しても続きから作り直せる。フォルダは srt-dubbing を実行したディレクトリにでき、名前は SRT のファイル名と速さだけで決まる。声を変えたとき、別の作品で同じ名前の SRT（`scripts.vo.srt`）を使うときは、前の音声が使い回されるので、フォルダを消してから合成する。
 - Edge TTS はキューごとの音声の末尾に約 0.9 秒の無音を付ける。srt-dubbing はこれを削ってから長さを測り、並べる。頭の約 0.2 秒の無音は残る。
 - キューの表示時間より長い音声（末尾の無音を除く）は速められる（最大 2 倍）。時刻を音声の長さから組めば（下記）速められることはない。
 
@@ -46,7 +47,7 @@ uv run viet_dubbing.py --srt <作業ディレクトリ>/scripts.vo.srt --voice e
 
 - 文言を直したキュー: `cue_<番号>.mp3` と、あれば `cue_<番号>.mp3.fast`（速めて作り直した目印）を消す。消していないキューは合成し直されないので、変わったキューだけが作り直される。
 - 時刻だけを直したキュー: キャッシュはそのままでよい。並べ直しと伸縮は毎回やり直される。
-- 文言を直したキューは音声の長さが変わるので、作り直したあとに時刻を組み直す（上記の 3〜4）。
+- 文言を直したキューは音声の長さが変わるので、作り直したあとに時刻を組み直す（上記の 3〜4）。合成し直す前に、直したキューの時刻を仮の長さ（上記の 1）に広げておく。前の短い枠のまま合成すると、枠の 2 倍を超えた音声が速め（`--rate` ＋25%）で作り直されてキャッシュに残り、そのキューだけ早口になる。
 - キューの追加・削除で番号がずれた: 番号と文言の対応が崩れるので、キャッシュのフォルダごと消して全体を作り直す。
 
 変わったキューは、前回の SRT と比べて見つける（git 管理していれば `git diff`、なければ前回の書き出し時に SRT を `out/` に控えておいて比べる）。作り直したら新しい MP3 を `public/vo.mp3` にコピーし、`public/norm/` の音量をそろえたファイルが作り直されることを確かめる。
@@ -58,13 +59,15 @@ uv run viet_dubbing.py --srt <作業ディレクトリ>/scripts.vo.srt --voice e
 - **位置**: 0:00 から台本の時刻どおりに並んでいるか。ffmpeg の `silencedetect` で発話の区間を出し、各キューの開始時刻と比べる（0.1〜0.2 秒程度のずれは問題ない）。大きくずれていれば、キューの時刻の方を録音に合わせるか、録音を切って並べ直すかをユーザーに訊く。
 - **長さ**: 動画の尺に収まるか。
 - **キューごとのファイル**: 1 本にまとめられていなければ、`public/vo/<キュー番号>.mp3` として受け取り、キューの開始時刻に置いてもよい。
+- **間や文言を直したいと言われたら**: 時刻を組み直しても録音に無音は足せない。間を足すなら録音をその位置で切って無音を挟み、文言を変えるならそのキューを録り直してもらう。そのあと発話の区間から時刻を取り直し、後ろのシーンの区間を確かめる。
 
 ## 音量をそろえる
 
 VO と BGM は音源ごとに音量がばらばらなので（例: VO -25 LUFS、BGM -9 LUFS）、編集の前に ffmpeg の `loudnorm` で同じ基準にそろえる。
 
 ```bash
-ffmpeg -y -i vo.mp3 -map 0:a -af loudnorm=I=-16:TP=-1.5:LRA=11 -ar 48000 norm/vo.wav
+mkdir -p public/norm
+ffmpeg -y -i public/vo.mp3 -map 0:a -af loudnorm=I=-16:TP=-1.5:LRA=11 -ar 48000 public/norm/vo.wav
 ```
 
 両方を -16 LUFS にそろえておけば、Remotion で指定する音量は「VO に対して何 dB 下げるか」として読める。

@@ -62,6 +62,7 @@ Claude Code で次を実行します。
 
 ```
 git clone https://github.com/plageoj/claude-skills.git
+mkdir -p ~/.claude/skills
 ln -s "$PWD/claude-skills/plugins/presentation/skills/slide-review" ~/.claude/skills/slide-review
 ln -s "$PWD/claude-skills/plugins/presentation/skills/slide-create" ~/.claude/skills/slide-create
 ```
