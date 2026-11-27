@@ -5,7 +5,7 @@ description: "既存の資料（ドキュメント、記事、台本、発表の
 
 # 資料からスライドを作る
 
-最初に `../slide-review/references/principal.md` を読む。スタイルの定義と、資料から作るときの決まり（4.5: 削った情報はノートへ、元にないものは足さない）がそこにある。
+最初に `../slide-review/references/principal.md` を読む（`../` で始まるパスは、このスキルのフォルダから見たもの）。スタイルの定義と、資料から作るときの決まり（4.5: 削った情報はノートへ、元にないものは足さない）がそこにある。
 
 ## 1. 入力
 
@@ -55,6 +55,8 @@ description: "既存の資料（ドキュメント、記事、台本、発表の
 見出しと本文（カードや SVG の中の文言を含む）をテキストに書き出し、yomiyasu スキル（プラグインなら `yomiyasu:yomiyasu`、スキルだけなら `yomiyasu`。種類は slides）で推敲する。作業ディレクトリが Claude Code の作業フォルダの外にあると、yomiyasu の検査はファイルを読まないので、標準入力で渡す。最終稿を確かめてから、1 か所ずつ `slides.md` に写す（置換でまとめて写さない）。引用したプロンプトや指示文は直さず、英語の前後の空白の決まりも当てない。図の代わりに置いた絵文字は残す。ノートは元の文の引用なので推敲しない。6 の評価で直した文は、その文だけ推敲し直す。入っていなければ飛ばし、報告でそう書く。
 
 ## 6. 書き出して確かめる
+
+出力先のフォルダで実行する。
 
 ```bash
 npx -y @marp-team/marp-cli@latest slides.md --no-stdin --html --allow-local-files --theme-set <assets/penta.css> --pdf --pdf-notes -o slides.pdf
