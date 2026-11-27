@@ -28,7 +28,8 @@ skill は手順書で、コードは同梱していません。収録スクリ�
 ### プラグインとして入れる
 
 ```
-/plugin install video --marketplace plageoj/claude-skills
+/plugin marketplace add plageoj/claude-skills
+/plugin install video@plageoj
 ```
 
 ### skill だけを入れる

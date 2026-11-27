@@ -11,17 +11,16 @@ plageoj が作った Claude Code のプラグインと skill を集めたマー�
 
 ## インストール
 
-プラグインごとに入れます。
+Claude Code で、このマーケットプレイスと、依存する [yomiyasu](https://github.com/nanaism/yomiyasu) のマーケットプレイスを登録してから、プラグインごとに入れます。yomiyasu は依存として自動で入ります。
 
 ```
-/plugin install presentation --marketplace plageoj/claude-skills
-```
-
-マーケットプレイスとして登録して、一覧から選ぶこともできます。
-
-```
+/plugin marketplace add nanaism/yomiyasu
 /plugin marketplace add plageoj/claude-skills
+/plugin install presentation@plageoj
+/plugin install video@plageoj
 ```
+
+`/plugin` だけを実行すると、登録したマーケットプレイスの一覧から選んで入れることもできます。
 
 ## 構成
 

@@ -55,7 +55,8 @@
 Claude Code で次を実行します。
 
 ```
-/plugin install presentation --marketplace plageoj/claude-skills
+/plugin marketplace add plageoj/claude-skills
+/plugin install presentation@plageoj
 ```
 
 ### skill だけを入れる
