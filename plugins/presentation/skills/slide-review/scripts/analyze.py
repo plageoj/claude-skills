@@ -133,8 +133,17 @@ def marp_declared_fonts(md_text):
     return fonts
 
 
-def font_file_stems():
-    """fontconfig のない環境で、フォントのフォルダにあるファイル名（小文字、空白・記号なし）を返す。"""
+FONT_STYLES = {"thin", "hairline", "extralight", "ultralight", "light", "regular", "normal", "book",
+               "medium", "semibold", "demibold", "bold", "extrabold", "ultrabold", "heavy", "black",
+               "italic", "oblique"}
+
+
+def compact(name):
+    return re.sub(r"[^a-z0-9]", "", name.lower())
+
+
+def font_files():
+    """fontconfig のない環境で、フォントのフォルダにあるフォントファイルを返す。"""
     home = Path.home()
     if sys.platform == "win32":
         dirs = [Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts",
@@ -143,31 +152,40 @@ def font_file_stems():
         dirs = [home / "Library" / "Fonts", Path("/Library/Fonts"), Path("/System/Library/Fonts")]
     else:
         dirs = [home / ".local" / "share" / "fonts", home / ".fonts", Path("/usr/share/fonts")]
-    stems = []
-    for d in dirs:
-        if d.is_dir():
-            stems += [re.sub(r"[^a-z0-9]", "", f.stem.lower()) for f in d.rglob("*")
-                      if f.suffix.lower() in (".ttf", ".otf", ".ttc")]
-    return stems
+    return [f for d in dirs if d.is_dir() for f in d.rglob("*")
+            if f.suffix.lower() in (".ttf", ".otf", ".ttc")]
+
+
+def font_file_has_family(path, family):
+    """フォントファイルの名前（ファミリー名＋スタイル）が family のものかを、メタデータで確かめる。"""
+    try:
+        name = pymupdf.Font(fontfile=str(path)).name
+    except Exception:
+        return False
+    if name.lower() == family.lower():
+        return True
+    rest = name[len(family):] if name.lower().startswith(family.lower() + " ") else None
+    return rest is not None and all(w.lower() in FONT_STYLES for w in rest.split())
 
 
 def check_installed(fonts):
     """指定フォントがこの環境で解決されるかを調べる。installed は True / False / None（確かめられない）。"""
     result = []
-    stems = None
+    files = None
     for name in fonts:
         try:
             matched = subprocess.run(["fc-match", "-f", "%{family}", name],
                                      capture_output=True, text=True).stdout
             installed = name.lower() in matched.lower()
         except FileNotFoundError:
-            # fontconfig がない（Windows など）。ファイル名で見つかれば入っているとし、
+            # fontconfig がない（Windows など）。ファイル名で候補を絞り、メタデータのファミリー名で確かめる。
             # 見つからなくてもファイル名が違うだけかもしれないので「確かめられない」にする
-            if stems is None:
-                stems = font_file_stems()
-            key = re.sub(r"[^a-z0-9]", "", name.lower())
+            if files is None:
+                files = font_files()
+            key = compact(name)
             matched = None
-            installed = True if key and any(key in s for s in stems) else None
+            installed = True if key and any(
+                key in compact(f.stem) and font_file_has_family(f, name) for f in files) else None
         result.append({"font": name, "installed": installed, "fallback": matched})
     return result
 
@@ -216,6 +234,10 @@ def marp_to_pdf(md_path, out_dir):
     npx = shutil.which("npx")
     if not npx:
         sys.exit("Marp の変換には npx（Node.js）が必要です。Marp で書き出した PDF を指定してください。")
+    # .cmd は cmd.exe を通り、引数の & や | などがコマンドとして解釈されるので、そうしたパスは渡さない
+    if npx.lower().endswith((".cmd", ".bat")) and re.search(r'[&|<>^%!"]', str(md_path) + str(pdf_path)):
+        sys.exit("パスに & | < > ^ % ! \" のどれかが含まれるため、Windows では Marp に渡せません。"
+                 "記号のない名前のフォルダやファイルに写すか、Marp で書き出した PDF を指定してください。")
     cmd = [npx, "-y", MARP_CLI, "--pdf", "--allow-local-files", str(md_path), "-o", str(pdf_path)]
     # marp-cli は標準入力が開いていると入力を待ち続けるため、明示的に閉じる
     subprocess.run(cmd, check=True, cwd=md_path.parent, capture_output=True,

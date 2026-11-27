@@ -4,7 +4,7 @@ VO は、動画の 0:00 から並んだ 1 本のファイル（`public/vo.mp3`�
 
 ## srt-dubbing で合成する
 
-[plageoj/srt-dubbing](https://github.com/plageoj/srt-dubbing) は、SRT の各キューを Edge TTS で読み、キューの開始時刻に並べる。Python 3.10 以上、ffmpeg、uv が要る（uv がなければ `pip install .` で入れ、`uv run X` を `python X` / `X` に読み替える）。
+[plageoj/srt-dubbing](https://github.com/plageoj/srt-dubbing) は、SRT の各キューを Edge TTS で読み、キューの開始時刻に並べる。Python 3.10 以上、ffmpeg、uv が要る（uv がなければ作業ディレクトリで `pip install ./srt-dubbing` として入れ、`uv run --project srt-dubbing X` を `python X` / `X` に読み替える）。
 
 作業ディレクトリの中に clone し、作業ディレクトリから実行する。
 
@@ -13,7 +13,7 @@ git clone https://github.com/plageoj/srt-dubbing
 uv run --project srt-dubbing srt-dubbing/viet_dubbing.py --srt scripts.vo.srt --voice ja-JP-KeitaNeural --rate +15% --audio-only
 ```
 
-- `--voice` は edge-tts の音声 ID（`uv run edge-tts --list-voices`）。`female` / `male` はベトナム語の音声の別名なので使わない。候補を 2〜3 個合成して選んでもらう。
+- `--voice` は edge-tts の音声 ID（`uv run --project srt-dubbing edge-tts --list-voices`）。`female` / `male` はベトナム語の音声の別名なので使わない。候補を 2〜3 個合成して選んでもらう。
 - `--rate`: ja-JP-KeitaNeural は既定だと遅く聞こえ、`+15%` でちょうどよいと言われた。遅くするなら `--rate=-10%`。
 - 英字・数字・同音の語を含むキューを先に数個合成して聞き、読みを直してから全体を合成する。エージェントは音を聞けないので、聞いてほしいキューの番号と文を並べてユーザーに頼む（確認を挟まないときは報告に載せる）。
 - キャッシュと MP3 は実行したディレクトリにでき、MP3 は `<SRT 名>_audio_<日時>.mp3` として実行のたびに増える（`--audio-only` では `--out` が効かない）。いちばん新しいものを `public/vo.mp3` にコピーする。
@@ -23,7 +23,7 @@ uv run --project srt-dubbing srt-dubbing/viet_dubbing.py --srt scripts.vo.srt --
 
 ### 時刻を音声の長さから組む
 
-1. 仮の時刻（各キューを 1 秒 4 字程度で割った長さ）で `scripts.vo.srt` を作り、合成する。
+1. 仮の時刻（各キューを 1 秒 4 字程度で割った長さ。ただし 2 秒より短くしない）で `scripts.vo.srt` を作り、合成する。短すぎる枠では、頭の無音を含めた音声が枠の 2 倍を超え、速めで作り直されてキャッシュに残る。
 2. キャッシュの `cue_*.mp3` の長さを、末尾の無音を除いて測る（ffprobe の長さだと、間がすべて約 0.9 秒延びる）。`silencedetect=n=-50dB:d=0.1` の最後の `silence_start`＋0.05 秒を長さにする。
 3. SKILL.md の工程 3 の表で時刻を組み直し、字幕用の SRT にも同じ時刻を入れる。TTS がキューの中で置く間は、ja-JP-KeitaNeural で読点約 0.4 秒、句点約 1 秒だった。声を変えたら測り直す。
 4. 組み直した SRT で再実行する（キャッシュで並べ直すだけ）。
