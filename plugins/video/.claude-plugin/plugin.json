@@ -1,0 +1,13 @@
+{
+  "name": "video",
+  "description": "アプリのデモやスライドから、ナレーションと字幕付きの紹介動画を作る",
+  "version": "0.1.0",
+  "author": {
+    "name": "plageoj"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/plageoj/claude-skills",
+  "dependencies": [
+    "yomiyasu@yomiyasu"
+  ]
+}

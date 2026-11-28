@@ -1,0 +1,73 @@
+/* @theme penta */
+/*
+ * Marp theme for ぺんた (@plageoj) style slides.
+ * Palette (principal.md 4.3): background #f0f9fe / primary #0b449e /
+ * secondary #6f8996 (boxes; #eeeeee text on it is 3.2:1) / accent #c0392b. Other colors are lighter or
+ * darker shades of these.
+ */
+@import 'default';
+
+section {
+  background: #f0f9fe;
+  color: #4d4d4d;
+  font-family: "M PLUS 2", sans-serif;
+  font-size: 44px;
+  line-height: 1.5;
+  padding: 56px 72px 48px 104px;
+  justify-content: flex-start;
+}
+
+/* The blue curve on the left edge */
+section::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 44px;
+  height: 720px;
+  background: linear-gradient(180deg, #0b6fcb, #1a2a8c);
+  clip-path: ellipse(2175px 2175px at -2138px 360px);
+}
+
+h1 { font-size: 52px; font-weight: 500; color: #000; margin: 0 0 36px; }
+p { margin: 0; }
+svg text { font-family: "M PLUS 2", sans-serif; }
+
+/* Text */
+.em { color: #0b449e; }          /* primary: the word the slide is about */
+.ng { color: #c0392b; }          /* accent: wrong answer, warning */
+.muted { color: #8a99a6; }
+.note { font-size: 26px; color: #6b7b88; } /* source, annotation (18pt or more) */
+
+/* Layouts: <!-- _class: ... --> */
+section.center { justify-content: center; text-align: center; }
+section.title h1 { font-size: 72px; margin: 0 0 12px; }
+section.title .sub { font-size: 44px; color: #000; }
+section.chapter h1 { font-size: 64px; margin: 0; }
+section.chapter .num { font-size: 40px; color: #0b449e; }
+section.big p:not(.note) { font-size: 76px; color: #000; line-height: 1.4; }
+
+/* Grey box for the takeaway of a slide */
+.box {
+  background: #6f8996;
+  color: #eeeeee;
+  text-align: center;
+  padding: 24px;
+  margin-top: 28px;
+}
+
+/* Illustrations side by side with captions, in place of bullet lists */
+.cards { display: flex; gap: 40px; justify-content: center; margin-top: 28px; }
+.card { flex: 1; text-align: center; }
+.card .icon { font-size: 120px; line-height: 1.2; }
+.card .icon img.emoji { width: 132px; height: 132px; }
+.card .cap { font-size: 40px; color: #000; }
+.card .cap2 { font-size: 34px; }
+
+/* Two panels to compare */
+.two { display: flex; gap: 48px; align-items: stretch; margin-top: 12px; }
+.two > div { flex: 1; background: #fff; border-radius: 12px; padding: 24px 32px; font-size: 36px; }
+.two .label { font-size: 34px; color: #6b7b88; }
+
+/* Step-by-step reveal: keep the layout, hide what comes on the next page */
+.hide { visibility: hidden; }
